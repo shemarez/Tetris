@@ -1,0 +1,146 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+import model.Point;
+import model.TetrisPiece;
+/**
+ * Creates next piece panel for the GUI, and
+ * draws the next piece on the panel.
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class NextPiece extends JPanel implements Observer {
+
+    /**
+     * Generated serial version ID.
+     */
+    private static final long serialVersionUID = -7943822836795937944L;
+    /** Block width. */
+    private static final int BLOCK_WIDTH = 20;
+    private static final int ADJUST_Y = 3;
+    /** Panel size. */
+   // private static final int PANEL_SIZE = ;
+    /** Storing tetris piece. */
+    private TetrisPiece myTetrisPiece;
+    /** Storing graphics. */
+    private Graphics2D myGraphics;
+    private Color myColor;
+    private Border myBorder1;
+    private Border myBorder2;
+    private boolean myThemeColor = false;
+
+    /**
+     * Constructor. Calls private methods.
+     */
+    public NextPiece() {
+        super();
+        myColor = new Color(196,207,161);
+        myBorder1 = BorderFactory.createMatteBorder(5, 5, 5, 5, Color.DARK_GRAY);
+        myBorder2 = BorderFactory.createMatteBorder(5, 5, 5, 5, myColor);
+        setupComponents();
+
+
+    }
+    /**
+     * Sets up panel for this class.
+     */
+    private void setupComponents() {
+        add(new JLabel("Next Piece"));
+        
+        setPreferredSize(new Dimension(120, 90));
+        nextPanel();
+        setLayout(new BorderLayout());
+    }
+    public void nextPanel() {
+        setBorder(BorderFactory.createCompoundBorder(myBorder2, myBorder1));
+        this.setBackground(myColor);
+        this.setBackground(myColor);
+        myThemeColor = false;
+    }
+    public void darkTheme() {
+        Border darkBorder= BorderFactory.createMatteBorder(5, 5, 5, 5, Color.BLUE);
+        setBorder(BorderFactory.createCompoundBorder(darkBorder, myBorder1));
+        this.setBackground(Color.BLACK);
+        myThemeColor = true;
+    }
+    @Override
+    public void update(final java.util.Observable theObs, final Object theObject) {
+        if (theObs instanceof Board) {
+
+            if (theObject instanceof TetrisPiece) {
+                myTetrisPiece = (TetrisPiece) theObject;
+
+                repaint();
+            }
+
+        }
+
+    }
+    /**
+     * Draws the next piece shape. 
+     * @param theGraphics 
+     */
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        final int centerX = 24;
+        final int centerY = 2;
+        
+        if (myTetrisPiece != null) {
+
+            for (final Point p: myTetrisPiece.getPoints()) {
+                if (myThemeColor) {
+                    myGraphics.setPaint(Color.BLUE);
+                    myGraphics.fillRect(p.x() * BLOCK_WIDTH + centerX, 
+                                        p.y() * BLOCK_WIDTH + centerY,
+                                        BLOCK_WIDTH ,  BLOCK_WIDTH);
+                    myGraphics.setStroke(new BasicStroke(3));
+                    myGraphics.setPaint(Color.BLACK);
+                    myGraphics.drawRect(p.x() * BLOCK_WIDTH + centerX, 
+                                        p.y() * BLOCK_WIDTH + centerY,
+                                        BLOCK_WIDTH ,  BLOCK_WIDTH);
+                   
+
+                } else {
+                    myGraphics.setPaint(Color.MAGENTA);
+                    myGraphics.fillRect(p.x() * BLOCK_WIDTH + centerX, 
+                                        (p.y() * -1 + ADJUST_Y) * BLOCK_WIDTH + centerY,
+                                        BLOCK_WIDTH ,  BLOCK_WIDTH);
+                    myGraphics.setPaint(Color.BLACK);
+                    myGraphics.drawRect(p.x() * BLOCK_WIDTH + centerX, 
+                                        (p.y() * -1 + ADJUST_Y) * BLOCK_WIDTH + centerY,
+                                        BLOCK_WIDTH ,  BLOCK_WIDTH);
+                
+
+                }
+               
+
+            }
+
+        } 
+
+
+
+    }
+
+
+
+}

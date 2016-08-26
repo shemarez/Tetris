@@ -1,0 +1,258 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
+import java.awt.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+
+public class Score extends JPanel implements Observer{
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4885469066941943955L;
+    private static final Color PANEL_COLOR= new Color(196,207,161);
+    private Integer[] myRowsComplete;
+    private LinkedList<Block[]> myFrozenPieces;
+    private Font myCustomFont;
+    private Color myPanelColor;
+    private Border myBorder1;
+    private Border myBorder2;
+    private Border myCompoundBorder;
+    private JPanel myLinesPanel;
+    private JPanel myLevelPanel;
+    private int myLines;
+    private JLabel myLevelLabel;
+    private JLabel myLinesLabel;
+    private JLabel myScoreLabel;
+    private Border myDarkBorder;
+    private Border myDarkCompoundBorder;
+    private BoardGUI myBoardGUI;
+    private int myLevel;
+    private int myScore;
+    private int myPieceScore;
+    
+    public Score(BoardGUI theBoard) {
+       
+        super();
+        myBoardGUI = theBoard;
+        myPanelColor = new Color(196,207,161);
+        myBorder1 = BorderFactory.createMatteBorder(3, 3, 3, 3, Color.DARK_GRAY);
+        myBorder2 = BorderFactory.createMatteBorder(3, 3, 3, 3, myPanelColor);
+        myDarkBorder = BorderFactory.createMatteBorder(3, 3, 3, 3, Color.BLUE);
+        myCompoundBorder = BorderFactory.createCompoundBorder(myBorder2, myBorder1);
+        myDarkCompoundBorder =  BorderFactory.createCompoundBorder(myDarkBorder, myBorder1);
+        myLevel = 1;
+        myScore = -4;
+        myLines = 0;
+        myPieceScore = 0;
+        myLevelPanel = new JPanel();
+        myLinesPanel = new JPanel();
+        myLevelLabel = new JLabel("Level" + myLevel);
+        myLinesLabel = new JLabel("Lines " + myLines);
+
+        setUpComponents();
+
+        
+       
+    }
+    /**
+     * Creating the panel for scoring.
+     */
+    private void setUpComponents() {
+        myScoreLabel = new JLabel("Score" + 0);
+        setPreferredSize(new Dimension(120, 50));
+        add(myScoreLabel);
+        score();
+        
+       
+        
+    }
+    public void score() {
+        
+        myScoreLabel.setForeground(Color.DARK_GRAY);
+        myScoreLabel.setFont(createCustomFont()); 
+        this.setBackground(myPanelColor);
+        this.setBorder(myCompoundBorder);
+        
+    }
+    public JPanel levelPanel() {
+        myLevelLabel.setForeground(Color.DARK_GRAY);
+        myLevelLabel.setFont(createCustomFont());
+        myLevelPanel.setBorder(myCompoundBorder);
+        myLevelPanel.add(myLevelLabel);
+        myLevelPanel.setPreferredSize(new Dimension(120, 50));
+        myLevelPanel.setBackground(myPanelColor);
+
+
+        return myLevelPanel;
+        
+    }
+    public JPanel linesPanel() {
+        
+        myLinesPanel.setBorder(myCompoundBorder);
+        myLinesPanel.setPreferredSize(new Dimension(120, 50));
+        myLinesPanel.setBackground(myPanelColor); 
+        myLinesLabel.setForeground(Color.DARK_GRAY);
+        myLinesLabel.setFont(createCustomFont());
+        myLinesPanel.add(myLinesLabel);
+
+
+        return myLinesPanel;
+        
+        
+    }
+    public void darkMode() {
+        
+        myLinesPanel.setBackground(Color.BLACK);
+        myLevelPanel.setBackground(Color.BLACK);
+        this.setBackground(Color.BLACK);
+        myLevelLabel.setForeground(Color.WHITE);
+        myLinesLabel.setForeground(Color.WHITE);
+        myScoreLabel.setForeground(Color.WHITE);
+        
+        myLinesPanel.setBorder(myDarkCompoundBorder);
+        myLevelPanel.setBorder(myDarkCompoundBorder);
+        this.setBorder(myDarkCompoundBorder);
+        
+       
+        
+    }
+    @Override
+    public void update(final Observable theObs, final Object theObject) {
+        if (theObs instanceof Board) {
+            if (theObject instanceof Integer[]) {
+                myRowsComplete = (Integer[]) theObject;
+                int linesCleared = 0;
+              //  scoreLines();
+                
+                
+                for (int i = 0; i <= myRowsComplete.length; i++) {
+                    linesCleared++;  
+                  //  System.out.println("ROWS COMPLETE: " + myLines);
+
+                }
+                clearedLines(linesCleared - 1);
+                
+                
+          /*      if (myLines > 1) {
+                    myBoardGUI.getTime().setDelay(10);
+                    
+                }*/
+
+
+
+
+            }
+           /* if (theObject instanceof List) {
+                myFrozenPieces = (LinkedList<Block[]>) theObject;
+                System.out.println("LIST: " + myFrozenPieces);
+                
+                
+            }*/
+        }
+        
+    }
+    public void reset() {
+        myScore = 0;
+        myLevel = 1;
+        myLines = 0;
+        this.myScoreLabel.setText("Score " + myScore);
+        this.myLevelLabel.setText("Level " + myLevel);
+        this.myLinesLabel.setText("Lines " + myLines);
+    }
+    public void setScore(int theScore) {
+        this.myPieceScore = theScore;
+        
+    }
+    public void scorePieces() {
+        myScore += myPieceScore;
+        this.myScoreLabel.setText("Score " + myScore);
+    }
+    private void clearedLines(int theLines) {
+        scoreLines(theLines);
+        myLines += theLines;
+        myLinesLabel.setText("Lines " + myLines);
+        nextLevel();   
+
+    }
+    private void nextLevel() {
+        final int delay = myBoardGUI.getTime().getDelay();
+        if (myLines % 5 == 0) {
+            myLevel++;
+            this.myLevelLabel.setText("Level " + myLevel);
+            setDelay(delay - 100);
+        }
+    }
+    private void setDelay(final int theDelay) {
+        myBoardGUI.getTime().setDelay(theDelay);
+    }
+    private void scoreLines(int theLine) {
+ 
+        if(myLevel == 1) {
+            calcLines(theLine);  
+        }
+        if(myLevel == 2) {
+            calcLines(theLine);
+        }
+        if(myLevel == 3) {
+            calcLines(theLine);
+        }
+        if(myLevel == 4) {
+            calcLines(theLine);
+        }
+        this.myScoreLabel.setText("Score " + myScore);
+    }
+    
+    private void calcLines(int theLine) {
+        if(theLine == 1) {
+            myScore += myLevel * 40;
+        }
+        if(theLine == 2) {
+            myScore += myLevel * 100;
+        }
+        if(theLine == 3) {
+            myScore += myLevel * 300;
+        }
+        if(theLine == 4) {
+            myScore += myLevel * 1200;
+        }
+        
+    }
+
+    private Font createCustomFont() {
+        try {
+            //create the font to use. Specify the size!
+            myCustomFont = Font.createFont(Font.TRUETYPE_FONT,
+                                         new File("Fonts\\ARCADECLASSIC.ttf")).deriveFont(20f);
+            final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //register the font
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, 
+                                            new File("Fonts\\ARCADECLASSIC.ttf")));
+        } catch (final IOException e) {
+            e.printStackTrace();
+        } catch (final FontFormatException e) {
+            e.printStackTrace();
+        }
+        return myCustomFont;
+        
+        
+    }
+    
+
+}

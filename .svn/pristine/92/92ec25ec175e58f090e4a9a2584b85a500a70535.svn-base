@@ -1,0 +1,362 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+import model.Block;
+import model.Board;
+/**
+ * Creates new Board.java and shows it on GUI. 
+ * Builds all tetris pieces, and starts timer. 
+ * Presses the required keys for user.
+ * 
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class BoardGUI extends JPanel implements Observer {
+    /**
+     * Serial version ID.
+     */
+    private static final long serialVersionUID = -6232946033965941866L;
+    /**
+     * Animation speed.
+     */
+    private static final int ANIMATION_SPEED = 500;
+
+    /** Block width. */
+    private static final int BLOCK_WIDTH = 20;
+
+    /** Panel size. */
+    private static final int PANEL_SIZE = 100;
+    private static final int B = 7;
+    private static final Color ARCADE_PIECE = new Color(139, 149, 109);
+    private static final Color ARCADE_COLOR= new  Color(196, 207, 161);
+
+
+
+    /** Storing the board. */
+    private final Board myBoard;
+
+    /** Frame for mainGUI. */
+    private final MainGUI myFrame;
+
+    /** Storing graphics. */
+    private Graphics2D myGraphics;
+
+    /** Storing timer. */
+    private Timer myTimer;
+
+    /** Storing tetris piece x. */
+    private int myX; 
+
+    /** Storing tetris piece y. */
+    private int myY;
+
+    /** Arraylist of Block[] used to create shapes.*/
+    private List<Block[]> myBlockList;
+    /** Checks to see if timer started. */
+    private boolean myTimerStarted;
+    /** Checks to see if timer is paused. */
+    private boolean myTimerIsPaused;
+    private JMenuItem myNewGame;
+    private JMenuItem myEndGame;
+    private JLabel myGameOverLabel;
+    private boolean myPause = false;
+    private boolean myThemeColor = false;
+    private boolean myGameOver = false;
+    private int myTime;
+    ArrayList <Color> classicColors = new ArrayList<Color>();
+
+    /**
+     * Constructor, initializes frame. 
+     * Creates new Board, calls private methods.
+     * 
+     * @param theFrame to add to 
+     * @param theBoard the main board
+     */
+    public BoardGUI(final MainGUI theFrame, final Board theBoard) {
+        super();
+        this.myFrame = theFrame;
+        myBoard = theBoard;
+        myBlockList = new ArrayList<Block[]>();
+        myX = -PANEL_SIZE;
+        myY = -PANEL_SIZE;
+        myGameOverLabel = new JLabel("Game Over!");
+        myGameOverLabel.setFont(theFrame.createCustomFont());
+        myTime = 400;
+        setup();
+
+
+
+
+    }
+    public void newGame(JMenuItem theNewGame, JMenuItem theEndGame) {
+        myNewGame = theNewGame;
+        myEndGame = theEndGame;
+        myBoard.newGame();
+        theNewGame.setEnabled(false);
+        theEndGame.setEnabled(true);
+        myGameOver = false;
+
+        timer();
+    }
+    private void setup() {
+        setLayout(new BorderLayout());
+        this.setBackground(ARCADE_COLOR);
+        this.setBorder(BorderFactory.createMatteBorder(B, B, B, B, Color.DARK_GRAY));
+        setPreferredSize(new Dimension(myBoard.getWidth() * BLOCK_WIDTH,
+                                       myBoard.getHeight() * BLOCK_WIDTH));
+
+        myFrame.pack();
+    }
+    public void endGame() {
+        myTimer.stop();
+        JOptionPane.showMessageDialog(myFrame, myGameOverLabel);
+        myGameOver = true;
+
+    }
+    /**
+     * Sets up the panel for this class.
+     */
+    public void arcadeTheme() {
+        setLayout(new BorderLayout());
+        this.setBackground(ARCADE_COLOR);
+        this.setBorder(BorderFactory.createMatteBorder(B, B, B, B, Color.DARK_GRAY));
+        setPreferredSize(new Dimension(myBoard.getWidth() * BLOCK_WIDTH,
+                                       myBoard.getHeight() * BLOCK_WIDTH));
+        myThemeColor = false;
+
+    }
+    public void darkTheme() {
+        setLayout(new BorderLayout());
+        this.setBackground(Color.BLACK);
+        this.setBorder(BorderFactory.createMatteBorder(B, B, B, B, Color.BLUE));
+        setPreferredSize(new Dimension(myBoard.getWidth() * BLOCK_WIDTH,
+                                       myBoard.getHeight() * BLOCK_WIDTH));
+        myThemeColor = true;
+
+
+    }
+    public void remixTheme() {
+        for(Color c: classicColors) {
+            Collections.shuffle(classicColors);
+            
+            this.setBackground(c);
+        }
+        
+    }
+    /**
+     * For Observable. Updates the observable to what 
+     * the new value is. Ends game, helps create tetris shape.
+     */
+    @Override
+    public void update(final Observable theObservable, final Object theArg) {
+        if (theObservable instanceof Board) {
+
+            if (theArg instanceof ArrayList) { 
+                myBlockList = (ArrayList<Block[]>) theArg;
+                repaint();
+
+            }
+            if (theArg instanceof Boolean) {      
+                final boolean gameOver = (Boolean) theArg;
+                if (gameOver) {
+                    endGame();
+                    myNewGame.setEnabled(true);
+                    myEndGame.setEnabled(false);
+
+                }
+
+
+            }
+
+        }
+
+
+    }
+    /**
+     * Stops timer.
+     */
+    public void stop() {
+        myTimer.stop();
+        myPause = true;
+    }
+    /**
+     * Starts timer.
+     */
+    public void start() {
+        myTimer.start();
+        myPause = false;
+    }
+
+    /**
+     * Creates timer, adds action to it. 
+     */
+    private void timer() {
+        myTimer = new Timer(ANIMATION_SPEED, new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myBoard.step();
+
+            }
+
+        });
+        myTimer.start();
+
+
+    }
+    /**
+     * Draws the shape of each tetris piece. 
+     * @param theGraphics graphics
+     */
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+        drawSquares();
+        remixTheme();
+
+    }
+    public void colorList() {
+        classicColors.add(Color.CYAN);
+        classicColors.add(Color.BLUE);
+        classicColors.add(Color.ORANGE);
+        classicColors.add(Color.YELLOW);
+        classicColors.add(Color.RED);
+        classicColors.add(Color.GREEN);
+        classicColors.add(Color.PINK);
+        
+    }
+    /**
+     * Creates the shape of each tetris piece.
+     */
+    private void drawSquares() {
+       
+   //   colorList();
+        for (int i = myBlockList.size() - 1; i >= 0; i--) {
+            myY = (BLOCK_WIDTH - i - 1) * BLOCK_WIDTH;
+
+            final Block[] list =   myBlockList.get(i); 
+            for (int j = 0; j <= list.length - 1; j++) {
+                myX = j * BLOCK_WIDTH;
+                if (list[j] != null && !myThemeColor) { 
+                    myGraphics.setPaint(ARCADE_PIECE);
+                    myGraphics.fillRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH); 
+                    myGraphics.setPaint(Color.DARK_GRAY);
+                    myGraphics.setStroke(new BasicStroke(3));
+                    myGraphics.drawRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH);
+                }
+                if (list[j] != null && myThemeColor) {
+
+//                    for(Color c: classicColors) {
+//                        Collections.shuffle(classicColors);
+                    myGraphics.setPaint(Color.BLUE);
+                    myGraphics.drawRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH);
+                    myGraphics.setPaint(Color.BLACK);
+                    myGraphics.fillRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH); 
+
+//                        myGraphics.setPaint(c);
+//                        myGraphics.fillRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH); 
+//                        myGraphics.setPaint(Color.BLACK);
+//                        myGraphics.setStroke(new BasicStroke(3));
+//                        myGraphics.drawRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH);
+
+//                    }
+
+
+                }
+            }
+        }
+
+    }
+    public void setTimer(int theTime) {
+        this.myTime = theTime;
+    }
+    public Timer getTime(){
+        return myTimer;
+    }
+    @Override
+    public boolean isFocusTraversable() {
+        return true;
+    }
+    /**
+     * Checks to see what key was pressed, 
+     * calls that action.
+     * @param theE the event
+     */
+    public void keyPressed(final KeyEvent theE) {
+
+        final int key = theE.getKeyCode();
+        if (myPause || !myGameOver) {
+            if (key == KeyEvent.VK_LEFT) {
+                myBoard.left();
+            }
+
+            if (key == KeyEvent.VK_RIGHT) {
+                myBoard.right();
+            }
+
+            if (key == KeyEvent.VK_X) {
+                myBoard.rotateCW();
+            }
+            if (key == KeyEvent.VK_Z) {
+                myBoard.rotateCW();
+            }
+
+            if (key == KeyEvent.VK_DOWN) {
+                myBoard.step();
+            } 
+            if (key == KeyEvent.VK_SPACE) {
+                myBoard.drop();
+            }      
+            
+        }
+
+        if (key == KeyEvent.VK_P) {            
+            if (myPause) {
+                myTimer.start();
+            } else {
+                myTimer.stop();
+            }
+            myPause = !myPause;
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+}

@@ -1,0 +1,238 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
+import java.awt.List;
+import java.io.File;
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+
+public class Score extends JPanel implements Observer{
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4885469066941943955L;
+    private Integer[] myRowsComplete;
+    private LinkedList<Block[]> myFrozenPieces;
+    private Font myCustomFont;
+    private Color myPanelColor;
+    private Border myBorder1;
+    private Border myBorder2;
+    private Border myCompoundBorder;
+    private JPanel myLinesPanel;
+    private JPanel myLevelPanel;
+    private int myLines;
+    private JLabel myLevelLabel;
+    private JLabel myLinesLabel;
+    private JLabel myScoreLabel;
+    private Border myDarkBorder;
+    private Border myDarkCompoundBorder;
+    private BoardGUI myBoardGUI;
+    
+    public Score(BoardGUI theBoard) {
+       
+        super();
+        myBoardGUI = theBoard;
+        myPanelColor = new Color(196,207,161);
+        myBorder1 = BorderFactory.createMatteBorder(3, 3, 3, 3, Color.DARK_GRAY);
+        myBorder2 = BorderFactory.createMatteBorder(3, 3, 3, 3, myPanelColor);
+        myDarkBorder = BorderFactory.createMatteBorder(3, 3, 3, 3, Color.BLUE);
+        myCompoundBorder = BorderFactory.createCompoundBorder(myBorder2, myBorder1);
+        myDarkCompoundBorder =  BorderFactory.createCompoundBorder(myDarkBorder, myBorder1);
+        setUpComponents();
+
+        
+       
+    }
+    /**
+     * Creating the panel for scoring.
+     */
+    private void setUpComponents() {
+        myScoreLabel = new JLabel("Score");
+        setPreferredSize(new Dimension(120, 50));
+        add(myScoreLabel);
+        score();
+        
+       
+        
+    }
+    public void score() {
+        
+        myScoreLabel.setForeground(Color.DARK_GRAY);
+        myScoreLabel.setFont(createCustomFont()); 
+        this.setBackground(myPanelColor);
+        this.setBorder(myCompoundBorder);
+        
+    }
+    public JPanel levelPanel() {
+        myLevelPanel = new JPanel();
+        myLevelLabel = new JLabel("Level" + 1);
+        myLevelLabel.setForeground(Color.DARK_GRAY);
+        myLevelLabel.setFont(createCustomFont());
+        myLevelPanel.setBorder(myCompoundBorder);
+        myLevelPanel.add(myLevelLabel);
+        myLevelPanel.setPreferredSize(new Dimension(120, 50));
+        myLevelPanel.setBackground(myPanelColor);
+
+
+        return myLevelPanel;
+        
+    }
+    public JPanel linesPanel() {
+        myLinesPanel = new JPanel();
+        myLinesPanel.setBorder(myCompoundBorder);
+        myLinesPanel.setPreferredSize(new Dimension(120, 50));
+        myLinesPanel.setBackground(myPanelColor);
+        myLinesLabel = new JLabel("Lines " + myLines);
+        myLinesLabel.setForeground(Color.DARK_GRAY);
+        myLinesLabel.setFont(createCustomFont());
+        myLinesPanel.add(myLinesLabel);
+
+
+        return myLinesPanel;
+        
+        
+    }
+    public void darkMode() {
+        
+        myLinesPanel.setBackground(Color.BLACK);
+        myLevelPanel.setBackground(Color.BLACK);
+        this.setBackground(Color.BLACK);
+        myLevelLabel.setForeground(Color.WHITE);
+        myLinesLabel.setForeground(Color.WHITE);
+        myScoreLabel.setForeground(Color.WHITE);
+        
+        myLinesPanel.setBorder(myDarkCompoundBorder);
+        myLevelPanel.setBorder(myDarkCompoundBorder);
+        this.setBorder(myDarkCompoundBorder);
+        
+       
+        
+    }
+    @Override
+    public void update(final Observable theObs, final Object theObject) {
+        if (theObs instanceof Board) {
+            if (theObject instanceof Integer[]) {
+                myRowsComplete = (Integer[]) theObject;
+                int linesCleared = 0;
+                for (int i = 0; i <= myRowsComplete.length; i++) {
+                    linesCleared++;  
+                  //  System.out.println("ROWS COMPLETE: " + myLines);
+
+                }
+                clearedLines(linesCleared - 1);
+                
+          /*      if (myLines > 1) {
+                    myBoardGUI.getTime().setDelay(10);
+                    
+                }*/
+
+
+
+
+            }
+           /* if (theObject instanceof List) {
+                myFrozenPieces = (LinkedList<Block[]>) theObject;
+                System.out.println("LIST: " + myFrozenPieces);
+                
+                
+            }*/
+        }
+        
+    }
+    private void clearedLines(int theLines) {
+        int theLevel = 1;
+        myLines += theLines;
+        myLinesLabel.setText("Lines " + myLines);
+        nextLevel();
+            
+            int delay = myBoardGUI.getTime().getDelay();
+//            if (myLines < 5) {
+               // myBoardGUI.getTime().setDelay(500);
+               // setDelay(delay, theLevel++);
+                
+//            }
+//            if (myLines == 5) { 
+//            myBoardGUI.getTime().setDelay(450);
+//            }
+//            System.out.println("delay: " + myBoardGUI.getTime().getDelay());
+//        if (myLines <= 4) {
+//            System.out.println("Level 1");
+//            myBoardGUI.getTime().setDelay(200);
+//        }
+
+        
+    }
+    private void nextLevel() {
+        int theLevel = 1;
+        int delay = myBoardGUI.getTime().getDelay();
+       /* if (myLines == 5) { 
+            setDelay(450, 2);   
+        } else if (myLines == 10) {
+            
+            setDelay(450, 3);   
+        } else if (myLines == 15) {
+            setDelay(425, 4);       
+        } else if (myLines == 20) {
+            
+            setDelay(400, 5);       
+        } else if (myLines == 25) {
+            setDelay(375, 6);       
+        } else if (myLines == 30) {
+            setDelay(350, 7);       
+        } else if (myLines == 35) {
+            setDelay(325, 8);       
+        } else if (myLines == 40) {
+            setDelay(300, 9);       
+        } else if (myLines == 45) {
+            setDelay(275, 10);       
+        } */
+        if(myLines % 5 == 0) {
+            setDelay(delay - 100);
+        }
+        
+        
+    }
+    private void setDelay(int theDelay) {
+        int level = 1;
+        myBoardGUI.getTime().setDelay(theDelay);
+        level++;
+        System.out.println("LEVEL: " + level);
+        System.out.println("DELAY: " + theDelay);
+        this.myLevelLabel.setText("Level " + level);
+    }
+    private Font createCustomFont() {
+        try {
+            //create the font to use. Specify the size!
+            myCustomFont = Font.createFont(Font.TRUETYPE_FONT,
+                                         new File("Fonts\\ARCADECLASSIC.ttf")).deriveFont(20f);
+            final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //register the font
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT, 
+                                            new File("Fonts\\ARCADECLASSIC.ttf")));
+        } catch (final IOException e) {
+            e.printStackTrace();
+        } catch (final FontFormatException e) {
+            e.printStackTrace();
+        }
+        return myCustomFont;
+        
+        
+    }
+    
+
+}

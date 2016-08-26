@@ -1,0 +1,129 @@
+package view;
+
+import java.awt.BasicStroke;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+import model.Point;
+import model.TetrisPiece;
+
+public class BoardGUI extends JPanel implements Observer {
+    
+    private static final int BOARD_HEIGHT = 20;
+    private static final int BOARD_WIDTH = 10;
+    
+    private Board myBoard;
+    private MainGUI myFrame;
+    private Graphics2D myGraphics;
+    
+    public BoardGUI(Board theBoard, MainGUI theFrame){
+        this.myBoard = theBoard;
+        this.myFrame = theFrame;
+       // createGameBoard();
+        setLayout(new BorderLayout());
+        setBackground(Color.DARK_GRAY);
+        Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        myFrame.pack();
+        myBoard.newGame();
+
+        System.out.println(myBoard.toString());
+       // System.out.println(board.toString());
+        
+    }
+    
+    private void createGameBoard() {
+        setPreferredSize(new Dimension(myBoard.getWidth(), myBoard.getHeight()));
+
+        Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        myFrame.pack();
+        myBoard.newGame();
+        System.out.println(myBoard.toString());
+        
+
+    }
+   public JPanel createNextPiece(){
+        JPanel nextPiece = new JPanel();
+        nextPiece.setPreferredSize(new Dimension(100, 100));
+        nextPiece.setBackground(Color.LIGHT_GRAY);
+        
+        
+        
+        return nextPiece;
+        
+        
+    }
+    public JPanel createScorePanel() {
+        JPanel scorePanel = new JPanel();
+        scorePanel.setPreferredSize(new Dimension(100, 100));
+        JLabel score = new JLabel("Score: ");
+        
+        scorePanel.add(score);
+        
+        scorePanel.setBackground(Color.LIGHT_GRAY);
+        return scorePanel;
+    }
+
+    @Override
+    public void update(final Observable theObservable, final Object theArg) {
+        if (theObservable instanceof Board) {
+//           Board board =  new Board();
+//           board.newGame();
+//           System.out.println(board.toString());
+            
+        }
+        
+        
+    }
+    
+
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        myGraphics.setColor(Color.WHITE);
+        final TetrisPiece currentPiece = TetrisPiece.getRandomPiece();
+        final int width = currentPiece.getWidth();
+        final int height = currentPiece.getHeight();
+        
+      /*  myGraphics.fillRect(1*10, 2*10, 3*10, 2*10);
+        myGraphics.fillRect(2*10, 2*10, 3*10, 2*10);
+        myGraphics.fillRect(0*10, 1*10, 3*10, 2*10);
+        myGraphics.fillRect(1*10, 1*10, 3*10, 2*10);*/
+        
+        for (final Point p: currentPiece.getPoints()) {
+           // System.out.println("X " + brick.getX() + "Y " + brick.getY());
+//            System.out.println("Y " + brick.getY());
+         //   myGraphics.drawRect(p.x() *10   , p.y() * 10 , width * 10  , height * 10);
+           
+            myGraphics.setStroke(new BasicStroke(2));
+            myGraphics.setColor(Color.BLUE);
+            myGraphics.fillRect(p.x() *10   , p.y() * 10 , width * 10  , height * 10);
+            
+            myGraphics.setColor(Color.BLACK);
+            myGraphics.drawRect(p.x() *10   , p.y() * 10 , width * 10  , height * 10);
+
+        }
+
+        
+    }
+    
+
+    
+    
+
+}

@@ -1,0 +1,71 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.EventQueue;
+import java.awt.GridLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+
+import model.Board;
+import model.TetrisPiece;
+
+public class MainGUI extends JFrame{
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -5056050661369885282L;
+    private JMenuBar myMenuBar;
+    public void start() {
+        setTitle("Tetris");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        final JPanel eastPanel = new JPanel(new BorderLayout());
+  
+        Board mainBoard = new Board();
+        final BoardGUI board = new BoardGUI(mainBoard, this);
+        mainBoard.addObserver(board);
+      //  board.setSize(new Dimension(mainBoard.getWidth(), mainBoard.getHeight()));
+       // board.setSize(new Dimension(1000, 2000));
+        board.setPreferredSize(new Dimension(mainBoard.getWidth() * 20, mainBoard.getHeight() * 20));
+        setJMenuBar(createMenuBar());
+        add(board, BorderLayout.CENTER);
+        eastPanel.setBackground(Color.DARK_GRAY);
+        eastPanel.add(board.createNextPiece(), BorderLayout.NORTH);
+        eastPanel.add(board.createScorePanel(), BorderLayout.SOUTH);
+        add(eastPanel, BorderLayout.EAST);
+        
+        
+
+        setResizable(false);
+        
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    
+    public JMenuBar createMenuBar() {
+        myMenuBar = new JMenuBar();
+        
+        JMenu file = new JMenu("File");
+        
+        myMenuBar.add(file);
+        myMenuBar.setVisible(true);
+        
+        return myMenuBar;
+        
+        
+    }
+    
+    
+
+}
+
+
+

@@ -1,0 +1,235 @@
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+/**
+ * Creates new Board.java and shows it on GUI. 
+ * Builds all tetris pieces, and starts timer. 
+ * Presses the required keys for user.
+ * 
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class BoardGUI extends JPanel implements Observer {
+    /**
+     * Serial version ID.
+     */
+    private static final long serialVersionUID = -6232946033965941866L;
+    /**
+     * Animation speed.
+     */
+    private static final int ANIMATION_SPEED = 500;
+    /** Block width. */
+    private static final int BLOCK_WIDTH = 20;
+    /** Panel size. */
+    private static final int PANEL_SIZE = 100;
+
+    private Board myBoard;
+    private MainGUI myFrame;
+    private Graphics2D myGraphics;
+    private Timer myTimer;
+    private int myX; 
+    private int myY;
+    private ArrayList<Block[]> myBlockList;
+    boolean isStarted = false;
+    boolean isPaused = false;
+
+    public BoardGUI(MainGUI theFrame){
+        this.myFrame = theFrame;
+        myBoard = new Board();
+        setupComponents();
+        myBoard.newGame();
+        myBlockList = new ArrayList<Block[]>();
+        myX = -PANEL_SIZE;
+        myY = -PANEL_SIZE;
+
+        timer();
+
+
+    }
+    public Board getBoard() {
+        return myBoard;
+    }
+
+    private void setupComponents() {
+        setLayout(new BorderLayout());
+        setBackground(Color.GRAY);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        setPreferredSize(new Dimension(myBoard.getWidth() * BLOCK_WIDTH, myBoard.getHeight() * BLOCK_WIDTH));
+
+        myFrame.pack();
+
+    }
+
+    public JPanel createScorePanel() {
+        final JPanel scorePanel = new JPanel();
+        scorePanel.setPreferredSize(new Dimension(PANEL_SIZE, PANEL_SIZE));
+        final JLabel score = new JLabel("Score: ");
+
+        scorePanel.add(score);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        scorePanel.setBorder(blackline);
+        scorePanel.setBackground(Color.LIGHT_GRAY);
+        return scorePanel;
+    }
+
+    @Override
+    public void update(final Observable theObservable, final Object theArg) {
+        if (theObservable instanceof Board) {
+
+            if (theArg instanceof ArrayList) { 
+                myBlockList = (ArrayList<Block[]>) theArg;
+                repaint();
+
+            }
+            if (theArg instanceof Boolean) {      
+                final boolean gameOver = (Boolean) theArg;
+                if (gameOver) {
+                    myTimer.stop();
+                    JOptionPane.showMessageDialog(myFrame, "Game Over.");
+
+                }
+
+
+            }
+
+        }
+
+
+    }
+    public void stop() {
+        myTimer.stop();
+    }
+    public void start() {
+        if (isPaused)
+            return;
+
+        isStarted = true;
+        myTimer.start();
+    }
+    private void pause() throws IOException{
+        if (!isStarted)
+            return;
+
+        isPaused = !isPaused;
+        if (isPaused) {
+            myTimer.stop();
+            //   myGraphics.drawImage(image, 0, 0, null);
+            //setText("paused");
+        } else {
+            myTimer.start();
+            // statusbar.setText(String.valueOf(numLinesRemoved));
+        }
+        repaint();
+    }
+
+
+    private void timer() {
+        myTimer = new Timer(ANIMATION_SPEED, new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myBoard.step();
+                System.out.println(myBoard.toString());
+
+            }
+
+        });
+        myTimer.start();
+
+
+    }
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+        drawSquares();
+
+    }
+    private void drawSquares() {
+        for (int i = myBlockList.size() - 1; i >= 0; i--) {
+            myY = (BLOCK_WIDTH - i - 1) * BLOCK_WIDTH;
+
+            final Block[] list =   myBlockList.get(i); 
+            for (int j = 0; j <= list.length - 1; j++) {
+                myX = j * BLOCK_WIDTH;
+                if (list[j] != null) { 
+                    myGraphics.setPaint(Color.BLACK);
+                    myGraphics.fillRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH); 
+                    myGraphics.setPaint(Color.MAGENTA);
+                    myGraphics.drawRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH);
+                }
+            }
+        }
+
+    }
+    @Override
+    public boolean isFocusTraversable() {
+        return true;
+    }
+    public void keyPressed(KeyEvent theE){
+
+        final int key = theE.getKeyCode();
+
+        if (key == KeyEvent.VK_LEFT) {
+            myBoard.left();
+        }
+
+        if (key == KeyEvent.VK_RIGHT) {
+            myBoard.right();
+        }
+
+        if (key == KeyEvent.VK_UP) {
+            myBoard.rotateCW();
+        }
+
+        if (key == KeyEvent.VK_DOWN) {
+            myBoard.drop();
+        }       
+
+
+        /*  if (key == KeyEvent.VK_SPACE) {
+            myTimer.stop();
+
+        }
+       if(key == KeyEvent.VK_SPACE){
+            pause();
+
+        }
+        if (isPaused){
+            return;
+        }*/
+    }
+
+
+
+
+
+
+
+
+}

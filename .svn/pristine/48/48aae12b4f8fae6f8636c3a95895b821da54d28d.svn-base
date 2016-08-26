@@ -1,0 +1,224 @@
+package view;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+public class TetrisMenu extends JMenuBar{
+    
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6523545150132007076L;
+    private MainGUI myFrame;
+    private Font myFont;
+    private JMenu myThemes;
+    private BoardGUI myBoardGUI;
+    private NextPiece myNextPiece;
+    private JMenu myFile;
+    private Score myScorePanel;
+    private boolean myButtonPressed = false;
+    private Clip myArcadeClip;
+    private Clip myRemixClip;
+    public TetrisMenu(MainGUI theFrame, BoardGUI theBoardGUI, NextPiece theNextPiece, Score theScorePanel) {
+        this.myFrame = theFrame;
+        this.myFont = theFrame.createCustomFont();
+        myThemes = new JMenu("Themes");
+        this.myBoardGUI = theBoardGUI;
+        this.myNextPiece = theNextPiece;
+        this.myScorePanel = theScorePanel;
+        createMenuBar();
+        
+    }
+    /** Creates the menu bar. 
+     * 
+     * @return a menuBar
+     */
+    private JMenuBar createMenuBar() {
+        
+     
+        myFile = new JMenu("File");
+        final JMenu options = new JMenu("Game");
+        
+
+        final JMenu help = new JMenu("Help");
+        options.add(myThemes);
+        
+        final JCheckBox sound = new JCheckBox("Sound on/off");
+        options.addSeparator();
+        options.add(sound);
+        
+        myFile.setFont(myFont);
+        options.setFont(myFont);
+        help.setFont(myFont);
+
+
+        
+        add(myFile);
+        add(options);
+        add(help);
+        fileMenu();
+        createThemes();
+        sound.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+//               myArcadeClip.stop();
+//               myRemixClip.stop();
+                
+            }
+            
+        });
+        setVisible(true);
+
+        return this;
+
+
+    }
+    private void createThemes() {
+        final ButtonGroup group = new ButtonGroup();
+        final JCheckBox arcade = new JCheckBox("Arcade"); 
+        arcade.setSelected(true);
+        final JCheckBox dark = new JCheckBox("Dark");
+        myThemes.add(arcade);
+        myThemes.add(dark);
+        group.add(arcade);
+        group.add(dark);
+        
+        dark.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                myScorePanel.darkMode();
+                myBoardGUI.darkTheme();
+                myNextPiece.darkTheme();
+                try {
+                    myFrame.darkTheme();
+                    myArcadeClip.stop();
+                    remixSound();
+                } catch (final UnsupportedAudioFileException | IOException 
+                                | LineUnavailableException e1) {
+                    e1.printStackTrace();
+                }   
+            }
+            
+        });
+        arcade.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent theE) {
+                myScorePanel.levelPanel();
+                myScorePanel.linesPanel();
+                myScorePanel.score();
+                myNextPiece.nextPanel();
+                myBoardGUI.arcadeTheme();
+                try {
+                    myRemixClip.stop();
+                    arcadeSound();
+                    myFrame.arcadeTheme();
+                } catch (final IOException | UnsupportedAudioFileException | LineUnavailableException e1) {
+                    e1.printStackTrace();
+                } 
+                
+            }
+            
+        });
+        
+    }
+    private void fileMenu() {
+        final JMenuItem exit = new JMenuItem("Exit");
+        final JMenuItem newGame = new JMenuItem("New Game");
+        final JMenuItem endGame = new JMenuItem("End Game");
+        myFile.add(newGame);
+        myFile.add(endGame);
+        myFile.addSeparator();
+        myFile.add(exit);
+        
+        exit.setFont(myFont);
+        newGame.setFont(myFont);
+        endGame.setFont(myFont);  
+        
+        endGame.setEnabled(false);
+        
+        newGame.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myBoardGUI.newGame(newGame, endGame); 
+                try {
+                    arcadeSound();
+                }
+                catch (UnsupportedAudioFileException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                catch (LineUnavailableException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+
+        });
+        endGame.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myBoardGUI.endGame();
+                myArcadeClip.stop();
+               // myRemixClip.stop();
+                newGame.setEnabled(true);
+                endGame.setEnabled(false);
+
+
+            }
+
+        });
+        exit.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myFrame.dispose();
+
+            }
+
+        });
+        
+        
+        
+    }
+    public void remixSound() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        final File soundFile = new File("Audio/remixTheme.wav");
+        final AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+        myRemixClip = AudioSystem.getClip();
+        myRemixClip.open(audioIn);
+        myRemixClip.loop(Clip.LOOP_CONTINUOUSLY);
+        
+    }
+    public void arcadeSound() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        File soundFile = new File("Audio/arcade.wav");
+        AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+        myArcadeClip = AudioSystem.getClip();
+        myArcadeClip.open(audioIn);
+        myArcadeClip.loop(Clip.LOOP_CONTINUOUSLY);
+        
+    }
+
+
+}

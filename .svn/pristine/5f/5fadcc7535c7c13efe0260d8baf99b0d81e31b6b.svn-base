@@ -1,0 +1,111 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+import model.Point;
+import model.TetrisPiece;
+/**
+ * Creates next piece panel for the GUI, and
+ * draws the next piece on the panel.
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class NextPiece extends JPanel implements Observer {
+
+    /**
+     * Generated serial version ID.
+     */
+    private static final long serialVersionUID = -7943822836795937944L;
+    /** Block width. */
+    private static final int BLOCK_WIDTH = 20;
+    /** Panel size. */
+   // private static final int PANEL_SIZE = ;
+    /** Storing tetris piece. */
+    private TetrisPiece myTetrisPiece;
+    /** Storing graphics. */
+    private Graphics2D myGraphics;
+
+    /**
+     * Constructor. Calls private methods.
+     */
+    public NextPiece() {
+        super();
+        setupComponents();
+
+
+    }
+    /**
+     * Sets up panel for this class.
+     */
+    private void setupComponents() {
+        add(new JLabel("Next Piece"));
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        setPreferredSize(new Dimension(120, 90));
+        this.setBackground(new Color(196,207,161));
+        setLayout(new BorderLayout());
+    }
+
+    @Override
+    public void update(final java.util.Observable theObs, final Object theObject) {
+        if (theObs instanceof Board) {
+
+            if (theObject instanceof TetrisPiece) {
+                myTetrisPiece = (TetrisPiece) theObject;
+                System.out.println(myTetrisPiece);
+
+                repaint();
+            }
+
+        }
+
+    }
+    /**
+     * Draws the next piece shape. 
+     * @param theGraphics 
+     */
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        final int centerX = 24;
+        final int centerY = 2;
+        
+        if (myTetrisPiece != null) {
+
+            for (final Point p: myTetrisPiece.getPoints()) {
+                myGraphics.setPaint(Color.MAGENTA);
+                myGraphics.fillRect(p.x() * BLOCK_WIDTH + centerX, 
+                                    p.y() * BLOCK_WIDTH + centerY,
+                                    BLOCK_WIDTH ,  BLOCK_WIDTH);
+                myGraphics.setPaint(Color.BLACK);
+                myGraphics.drawRect(p.x() * BLOCK_WIDTH + centerX, 
+                                    p.y() * BLOCK_WIDTH + centerY,
+                                    BLOCK_WIDTH ,  BLOCK_WIDTH);
+
+            }
+
+        } 
+
+
+
+    }
+
+
+
+}

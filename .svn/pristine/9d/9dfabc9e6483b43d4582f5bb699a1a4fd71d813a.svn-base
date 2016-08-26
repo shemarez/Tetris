@@ -1,0 +1,221 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+/**
+ * Puts all panels together, creates and shows
+ * GUI.
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class MainGUI extends JFrame {
+    /**
+     * Generated serial version ID.
+     */
+    private static final long serialVersionUID = -5056050661369885282L;
+    private static final String ARCADE_THEME = "images/tetris_tile1.png";
+    private static final String DARK_THEME = "images/dark_theme.jpg";
+    private static final String FONT = "Fonts\\ARCADECLASSIC.ttf";
+    private static final Color ARCADE_COLOR = new Color(196,207,161);
+    /** Stores a BoardGUI. */
+    private final BoardGUI myBoardGUI;
+    /** Stores east panel. */
+    private final JPanel myEastPanel;
+    private BufferedImage myImage;
+    private Board myMainBoard;
+    private Font myCustomFont;
+    private NextPiece myNextPanel;
+    private Score myScorePanel;
+    private JMenu myThemes;
+    private TetrisMenu myMenu;
+    private JPanel myControlPanel;
+    private JLabel myKeyLabel; 
+    private ImagePanel myFile;
+    
+    public MainGUI() throws IOException {
+        super();
+        myEastPanel = new JPanel(new FlowLayout());
+        myNextPanel = new NextPiece();
+        
+        myMainBoard = new Board();
+        myBoardGUI = new BoardGUI(this, myMainBoard);
+        myScorePanel = new Score(myBoardGUI);
+        myMenu = new TetrisMenu(this, myBoardGUI, myNextPanel, myScorePanel);
+        
+        myImage = ImageIO.read(new File(ARCADE_THEME));
+        myFile = new ImagePanel(myImage);
+        
+        
+        
+    }
+
+    /**
+     * Starts the GUI. Puts all the components
+     * together.
+     * @throws IOException 
+     * @throws LineUnavailableException 
+     * @throws UnsupportedAudioFileException 
+     */
+    public void start() throws IOException, UnsupportedAudioFileException, LineUnavailableException {
+        setTitle("Tetris");
+        setJMenuBar(myMenu);
+        this.setContentPane(myFile);
+//        this.setContentPane(new JLabel(new ImageIcon(ImageIO.read(new File(BACKGROUND)))));
+        this.setPreferredSize(new Dimension(450,475));
+        
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLayout(new FlowLayout());
+
+        myMainBoard.addObserver(myNextPanel);
+        myMainBoard.addObserver(myBoardGUI);
+        myMainBoard.addObserver(myScorePanel);
+
+        myBoardGUI.setFocusTraversalKeysEnabled(true);
+        myBoardGUI.requestFocus();
+        myBoardGUI.addKeyListener(new KeyPress());
+
+        
+        add(myBoardGUI, BorderLayout.CENTER);
+        
+        setUpEastPanel();
+        add(myEastPanel, BorderLayout.EAST);
+
+        setResizable(false);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+
+    }
+
+    
+    private void setUpEastPanel() {
+        myEastPanel.setPreferredSize(new Dimension(150, 400));
+        myEastPanel.add(myScorePanel);
+        myEastPanel.add(myScorePanel.levelPanel());
+        myEastPanel.add(myScorePanel.linesPanel());
+        keyLabel();
+        myEastPanel.add(myNextPanel);
+        myEastPanel.setBackground(Color.DARK_GRAY);
+        
+    }
+
+    /** Label for the game controls. */
+    private void keyLabel() {
+        myControlPanel = new JPanel();
+        myControlPanel.setPreferredSize(new Dimension(120, 120));
+        myControlPanel.setBackground(ARCADE_COLOR);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        myControlPanel.setBorder(blackline);
+        final StringBuilder controls = new StringBuilder(200);
+
+        controls.append("<html><u>Controls</u> "
+                        + "<br>RotateCW- X<br>RotateCCW- Z <br> Left- left<br> Right- right "
+                        + "<br>Down- down<br>Drop- space<br>Pause- p</html");
+
+        myKeyLabel = new JLabel(controls.toString(), JLabel.CENTER);
+
+        myKeyLabel.setFont(createCustomFont());
+        myKeyLabel.setForeground(Color.darkGray);
+        myControlPanel.add(myKeyLabel);
+
+        myEastPanel.add(myControlPanel);
+
+
+    }
+    public void arcadeTheme() throws IOException{
+        myImage = ImageIO.read(new File(ARCADE_THEME));
+        this.setContentPane(new ImagePanel(myImage));
+
+        add(myBoardGUI, BorderLayout.CENTER);
+        myKeyLabel.setForeground(Color.DARK_GRAY);
+        add(myEastPanel, BorderLayout.EAST);
+        myEastPanel.setBackground(Color.DARK_GRAY);
+        myControlPanel.setBackground(ARCADE_COLOR);
+        myKeyLabel.setBackground(ARCADE_COLOR);
+        
+
+        
+    }
+    public void darkTheme() throws IOException{
+        myImage = ImageIO.read(new File(DARK_THEME));
+        this.setContentPane(new ImagePanel(myImage));
+
+        add(myBoardGUI, BorderLayout.CENTER);
+        add(myEastPanel, BorderLayout.EAST);
+        myEastPanel.setBackground(Color.BLACK);
+        myControlPanel.setBackground(Color.BLACK);
+        myKeyLabel.setForeground(Color.WHITE);
+    }
+    public Font createCustomFont() {
+        try {
+            //create the font to use. Specify the size!
+            myCustomFont = Font.createFont(Font.TRUETYPE_FONT,
+                                         new File(FONT)).deriveFont(13f);
+            final GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            //register the font
+            ge.registerFont(Font.createFont(Font.TRUETYPE_FONT,
+                                            new File(FONT)));
+        } catch (final IOException e) {
+            e.printStackTrace();
+        } catch (final FontFormatException e) {
+            e.printStackTrace();
+        }
+        return myCustomFont;
+        
+        
+    }
+ 
+    /**
+     * Private class for KeyListeners. If key
+     * is pressed certain action occurs.
+     * @author Shema Rezanejad
+     * @version 1
+     *
+     */
+    private class KeyPress extends KeyAdapter {
+        @Override
+        public void keyPressed(final KeyEvent theEvent) {
+            myBoardGUI.keyPressed(theEvent);
+
+        }
+
+
+    }
+
+
+
+}
+
+
+

@@ -1,0 +1,299 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+/**
+ * Creates new Board.java and shows it on GUI. 
+ * Builds all tetris pieces, and starts timer. 
+ * Presses the required keys for user.
+ * 
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class BoardGUI extends JPanel implements Observer {
+    /**
+     * Serial version ID.
+     */
+    private static final long serialVersionUID = -6232946033965941866L;
+    /**
+     * Animation speed.
+     */
+    private static final int ANIMATION_SPEED = 500;
+    
+    /** Block width. */
+    private static final int BLOCK_WIDTH = 20;
+    
+    /** Panel size. */
+    private static final int PANEL_SIZE = 100;
+    
+    /** Storing the board. */
+    private Board myBoard;
+    
+    /** Frame for mainGUI. */
+    private MainGUI myFrame;
+    
+    /** Storing graphics. */
+    private Graphics2D myGraphics;
+    
+    /** Storing timer. */
+    private Timer myTimer;
+    
+    /** Storing tetris piece x. */
+    private int myX; 
+    
+    /** Storing tetris piece y. */
+    private int myY;
+    
+    /** Arraylist of Block[] used to create shapes.*/
+    private ArrayList<Block[]> myBlockList;
+    /** Checks to see if timer started. */
+    private boolean myTimerStarted;
+    /** Checks to see if timer is paused. */
+    private boolean myTimerIsPaused;
+    
+    /**
+     * Constructor, initializes frame. 
+     * Creates new Board, calls private methods.
+     * 
+     * @param theFrame to add to 
+     */
+    public BoardGUI(final MainGUI theFrame) {
+        super();
+        this.myFrame = theFrame;
+        myBoard = new Board();
+        setupComponents();
+        myBoard.newGame();
+        myBlockList = new ArrayList<Block[]>();
+        myX = -PANEL_SIZE;
+        myY = -PANEL_SIZE;
+
+        timer();
+
+
+    }
+    /** Getter for the Board.
+     * 
+     * @return myBoard
+     */
+    public Board getBoard() {
+        return myBoard;
+    }
+    
+    /**
+     * Sets up the panel for this class.
+     */
+    private void setupComponents() {
+        setLayout(new BorderLayout());
+        setBackground(Color.GRAY);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        setPreferredSize(new Dimension(myBoard.getWidth() * BLOCK_WIDTH,
+                                       myBoard.getHeight() * BLOCK_WIDTH));
+
+        myFrame.pack();
+
+    }
+    
+    /**
+     * Creating the panel for scoring.
+     * @return a JPanel
+     */
+    public JPanel createScorePanel() {
+        final JPanel scorePanel = new JPanel();
+        scorePanel.setPreferredSize(new Dimension(PANEL_SIZE, PANEL_SIZE));
+        final JLabel score = new JLabel("Score: ");
+
+        scorePanel.add(score);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        scorePanel.setBorder(blackline);
+        scorePanel.setBackground(Color.LIGHT_GRAY);
+        return scorePanel;
+    }
+    
+    /**
+     * For Observable. Updates the observable to what 
+     * the new value is. Ends game, helps create tetris shape.
+     */
+    @Override
+    public void update(final Observable theObservable, final Object theArg) {
+        if (theObservable instanceof Board) {
+
+            if (theArg instanceof ArrayList) { 
+                myBlockList = (ArrayList<Block[]>) theArg;
+                repaint();
+
+            }
+            if (theArg instanceof Boolean) {      
+                final boolean gameOver = (Boolean) theArg;
+                if (gameOver) {
+                    myTimer.stop();
+                    JOptionPane.showMessageDialog(myFrame, "Game Over.");
+
+                }
+
+
+            }
+
+        }
+
+
+    }
+    /**
+     * Stops timer.
+     */
+    public void stop() {
+        myTimer.stop();
+    }
+    /**
+     * Starts timer.
+     */
+    public void start() {
+        if (myTimerIsPaused) {
+            return;
+        }
+
+        myTimerStarted = true;
+        myTimer.start();
+    }
+    /*private void pause() throws IOException{
+        if (!myTimerStarted)
+            return;
+
+        myTimerIsPaused = !myTimerIsPaused;
+        if (myTimerIsPaused) {
+            myTimer.stop();
+            //   myGraphics.drawImage(image, 0, 0, null);
+            //setText("paused");
+        } else {
+            myTimer.start();
+            // statusbar.setText(String.valueOf(numLinesRemoved));
+        }
+        repaint();
+    }*/
+
+    /**
+     * Creates timer, adds action to it. 
+     */
+    private void timer() {
+        myTimer = new Timer(ANIMATION_SPEED, new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myBoard.step();
+                //System.out.println(myBoard.toString());
+
+            }
+
+        });
+        myTimer.start();
+
+
+    }
+    /**
+     * Draws the shape of each tetris piece. 
+     * @param theGraphics graphics
+     */
+    public void paintComponent(final Graphics theGraphics) {
+        super.paintComponent(theGraphics);
+        myGraphics = (Graphics2D) theGraphics;
+        myGraphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                                    RenderingHints.VALUE_ANTIALIAS_ON);
+        drawSquares();
+
+    }
+    /**
+     * Creates the shape of each tetris piece.
+     */
+    private void drawSquares() {
+        for (int i = myBlockList.size() - 1; i >= 0; i--) {
+            myY = (BLOCK_WIDTH - i - 1) * BLOCK_WIDTH;
+
+            final Block[] list =   myBlockList.get(i); 
+            for (int j = 0; j <= list.length - 1; j++) {
+                myX = j * BLOCK_WIDTH;
+                if (list[j] != null) { 
+                    myGraphics.setPaint(Color.BLACK);
+                    myGraphics.fillRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH); 
+                    myGraphics.setPaint(Color.MAGENTA);
+                    myGraphics.drawRect(myX  , myY, BLOCK_WIDTH, BLOCK_WIDTH);
+                }
+            }
+        }
+
+    }
+    @Override
+    public boolean isFocusTraversable() {
+        return true;
+    }
+    /**
+     * Checks to see what key was pressed, 
+     * calls that action.
+     * @param theE the event
+     */
+    public void keyPressed(final KeyEvent theE) {
+
+        final int key = theE.getKeyCode();
+
+        if (key == KeyEvent.VK_LEFT) {
+            myBoard.left();
+        }
+
+        if (key == KeyEvent.VK_RIGHT) {
+            myBoard.right();
+        }
+
+        if (key == KeyEvent.VK_UP) {
+            myBoard.rotateCW();
+        }
+
+        if (key == KeyEvent.VK_DOWN) {
+            myBoard.drop();
+        }       
+
+
+        /*  if (key == KeyEvent.VK_SPACE) {
+            myTimer.stop();
+
+        }
+       if(key == KeyEvent.VK_SPACE){
+            pause();
+
+        }
+        if (isPaused){
+            return;
+        }*/
+    }
+
+
+
+
+
+
+
+
+}

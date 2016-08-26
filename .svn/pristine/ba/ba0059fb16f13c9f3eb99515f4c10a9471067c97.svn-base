@@ -1,0 +1,75 @@
+package view;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.util.LinkedList;
+import java.util.Observable;
+import java.util.Observer;
+
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Block;
+import model.Board;
+
+public class Score extends JPanel implements Observer{
+    
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4885469066941943955L;
+    private Integer[] myRowsComplete;
+    private LinkedList<Block[]> myFrozenPieces;
+    public Score() {
+        super();
+        setUpComponents();
+    }
+    /**
+     * Creating the panel for scoring.
+     */
+    private void setUpComponents() {
+        setPreferredSize(new Dimension(120, 120));
+        final JLabel score = new JLabel("Score: ");
+        setBackground(new Color(196,207,161));
+        add(score);
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        setBorder(blackline);
+        setBackground(Color.LIGHT_GRAY);
+        
+    }
+    public JPanel levelGUI() {
+        final JPanel levelPanel = new JPanel();
+        final JLabel level = new JLabel("Level ");
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        levelPanel.setBorder(blackline);
+        levelPanel.add(level);
+        levelPanel.setPreferredSize(new Dimension(120, 50));
+        levelPanel.setBackground(new Color(196, 207, 161));
+
+
+        return levelPanel;
+        
+    }
+    @Override
+    public void update(final Observable theObs, final Object theObject) {
+        if (theObs instanceof Board) {
+            if (theObject instanceof Integer[]) {
+                myRowsComplete = (Integer[]) theObject;
+                
+            }
+            if (theObject instanceof LinkedList) {
+                myFrozenPieces = (LinkedList<Block[]>) theObject;
+                
+                
+            }
+        }
+        
+    }
+
+
+    
+
+}

@@ -1,0 +1,36 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.EventQueue;
+/**
+ * Runs the application.
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public final class RunTetris {
+    /**
+     * 
+     */
+    private RunTetris() {
+        
+    }
+    /**
+     * Main driver.
+     * @param theArgs the args
+     */
+    public static void main(final String[] theArgs) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                final MainGUI main = new MainGUI();
+                main.start();
+            }
+        });
+
+    }
+
+}

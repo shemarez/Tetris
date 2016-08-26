@@ -1,0 +1,298 @@
+package view;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+import com.sun.glass.events.KeyEvent;
+
+public class TetrisMenu extends JMenuBar{
+    
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6523545150132007076L;
+    private MainGUI myFrame;
+    private Font myFont;
+    private JMenu myMode;
+    private BoardGUI myBoardGUI;
+    private NextPiece myNextPiece;
+    private JMenu myFile;
+    private Score myScorePanel;
+    private boolean myButtonPressed = false;
+    private Clip myArcadeClip;
+    private Clip myRemixClip;
+    final JCheckBox myArcadeButton;
+    final JCheckBox myDarkButton;
+    JMenu sound ;
+    public TetrisMenu(MainGUI theFrame, BoardGUI theBoardGUI, NextPiece theNextPiece, Score theScorePanel) {
+        this.myFrame = theFrame;
+        this.myFont = theFrame.createCustomFont();
+        myMode = new JMenu("Mode");
+        this.myBoardGUI = theBoardGUI;
+        this.myNextPiece = theNextPiece;
+        this.myScorePanel = theScorePanel;
+        myArcadeButton = new JCheckBox("Arcade");
+        myDarkButton = new JCheckBox("Dark");
+        createMenuBar();
+        
+    }
+    /** Creates the menu bar. 
+     * 
+     * @return a menuBar
+     */
+    private JMenuBar createMenuBar() {
+        myFile = new JMenu("File");
+        myFile.setMnemonic(KeyEvent.VK_F);
+        final JMenu options = new JMenu("Game");
+        options.setMnemonic(KeyEvent.VK_G);
+        
+
+        final JMenu help = new JMenu("Help");
+        help.setMnemonic(KeyEvent.VK_H);
+        options.add(myMode);
+        myMode.setEnabled(false);
+        
+        sound = new JMenu("Sound");
+        sound.setMnemonic(KeyEvent.VK_S);
+        ButtonGroup soundGroup = new ButtonGroup();
+        final JCheckBox on = new JCheckBox("on");
+        on.setMnemonic(KeyEvent.VK_O);
+        final JCheckBox off = new JCheckBox("off");
+        off.setMnemonic(KeyEvent.VK_F);
+        
+        soundGroup.add(on);
+        on.setSelected(true);
+        soundGroup.add(off);
+        
+        options.addSeparator();
+        options.add(sound);
+        sound.add(on);
+        sound.add(off);
+        
+        myMode.setFont(myFont);
+        myMode.setMnemonic(KeyEvent.VK_T);
+        sound.setFont(myFont);
+        myFile.setFont(myFont);
+        options.setFont(myFont);
+        help.setFont(myFont);
+        on.setFont(myFont);
+        off.setFont(myFont);
+
+
+        sound.setEnabled(false);
+        add(myFile);
+        add(options);
+        add(help);
+        fileMenu();
+        createThemes();
+        off.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+               
+                if(myArcadeButton.isEnabled() && myArcadeClip.isRunning()) {
+                    myArcadeClip.stop();
+                } else if(myDarkButton.isEnabled() && myRemixClip.isRunning()) {
+                    myRemixClip.stop();
+                }
+                
+            }
+            
+        });
+        on.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                if(myArcadeButton.isSelected()) {
+                    myArcadeClip.start();
+                }
+                else if(myDarkButton.isSelected()) {
+                    myRemixClip.start();
+                }
+                
+            }
+            
+        });
+        setVisible(true);
+
+        return this;
+
+
+    }
+    private void createThemes() {
+        final ButtonGroup group = new ButtonGroup();
+       // final JCheckBox myArcadeButton = new JCheckBox("Arcade"); 
+        myArcadeButton.setSelected(true);
+        
+        myMode.setToolTipText("Pick your Game Mode");
+        myMode.add(myArcadeButton);
+        myMode.add(myDarkButton);
+        group.add(myArcadeButton);
+        group.add(myDarkButton);
+        
+        myDarkButton.setFont(myFont);
+        myDarkButton.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+
+                try {
+                    
+                    if(myArcadeButton.isEnabled() && myArcadeClip.isRunning()) {
+                        myArcadeClip.stop();
+                        myFrame.darkTheme();
+                        myScorePanel.darkMode();
+                        myBoardGUI.darkTheme();
+                        myNextPiece.darkTheme();
+                        remixSound();
+                    } 
+                   
+                    
+                    
+                } catch (final UnsupportedAudioFileException | IOException 
+                                | LineUnavailableException e1) {
+                    e1.printStackTrace();
+                }   
+            }
+            
+        });
+        myArcadeButton.setFont(myFont);
+        myArcadeButton.setToolTipText("Classic Tetris");
+        myDarkButton.setToolTipText("Do you dare?");
+        myArcadeButton.addActionListener(new ActionListener() {
+         
+            @Override
+            public void actionPerformed(final ActionEvent theE) {
+
+                try {
+                    if(myDarkButton.isEnabled() && myRemixClip.isRunning()) {
+                        myRemixClip.stop();
+                        arcadeSound();
+                        myFrame.arcadeTheme();
+                        myScorePanel.levelPanel();
+                        myScorePanel.linesPanel();
+                        myScorePanel.score();
+                        myNextPiece.nextPanel();
+                        myBoardGUI.arcadeTheme();
+                        
+                    }
+                    
+                } catch (final IOException | UnsupportedAudioFileException | LineUnavailableException e1) {
+                    e1.printStackTrace();
+                } 
+                
+            }
+            
+        });
+        
+    }
+    private void fileMenu() {
+        final JMenuItem exit = new JMenuItem("Exit");
+        final JMenuItem newGame = new JMenuItem("New Game");
+        final JMenuItem endGame = new JMenuItem("End Game");
+        myFile.add(newGame);
+        myFile.add(endGame);
+        myFile.addSeparator();
+        myFile.add(exit);
+        
+        exit.setFont(myFont);
+        newGame.setFont(myFont);
+        newGame.setMnemonic(KeyEvent.VK_N);
+        endGame.setFont(myFont);  
+        endGame.setMnemonic(KeyEvent.VK_E);
+        exit.setMnemonic(KeyEvent.VK_X);
+        
+        endGame.setEnabled(false);
+        
+        newGame.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myButtonPressed = true;
+                myBoardGUI.newGame(newGame, endGame); 
+                myScorePanel.reset();
+                myMode.setEnabled(true);
+                sound.setEnabled(true);
+                try {
+                    if(myArcadeButton.isSelected()) {
+                        arcadeSound(); 
+                    }
+                    else if(myDarkButton.isSelected()) {
+                        remixSound();
+                    }
+                    
+                }
+                catch (final UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+                    
+                }
+            }
+
+        });
+        endGame.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+              //  myBoardGUI.endGame();
+                if(myArcadeButton.isSelected() && myBoardGUI.endGame()) {
+                    myArcadeClip.stop();
+                }
+                else if(myDarkButton.isSelected() && myBoardGUI.endGame()) {
+                  myRemixClip.stop();
+                  
+                }
+                
+                
+                myMode.setEnabled(false);
+                newGame.setEnabled(true);
+                endGame.setEnabled(false);
+
+
+            }
+
+        });
+        exit.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                myFrame.dispose();
+
+            }
+
+        });
+        
+        
+        
+    }
+    public void remixSound() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        final File soundFile = new File("Audio/remixTheme.wav");
+        final AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+        myRemixClip = AudioSystem.getClip();
+        myRemixClip.open(audioIn);
+        myRemixClip.loop(Clip.LOOP_CONTINUOUSLY);
+        
+    }
+    public void arcadeSound() throws UnsupportedAudioFileException, IOException, LineUnavailableException {
+        File soundFile = new File("Audio/arcade.wav");
+        AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+        myArcadeClip = AudioSystem.getClip();
+        myArcadeClip.open(audioIn);
+        myArcadeClip.loop(Clip.LOOP_CONTINUOUSLY);
+        
+    }
+
+
+}

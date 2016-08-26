@@ -1,0 +1,159 @@
+/*
+ * TCSS305 Tetris part a
+ * winter 2016
+ */
+package view;
+
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import javax.swing.BorderFactory;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.border.Border;
+
+import model.Board;
+/**
+ * Puts all panels together, creates and shows
+ * GUI.
+ * @author Shema Rezanejad
+ * @version 1
+ *
+ */
+public class MainGUI extends JFrame {
+    /**
+     * Generated serial version ID.
+     */
+    private static final long serialVersionUID = -5056050661369885282L;
+    /** Stores a BoardGUI. */
+    private BoardGUI myBoardGUI;
+    /** Stores east panel. */
+    private JPanel myEastPanel;
+
+    /**
+     * Starts the GUI. Puts all the components
+     * together.
+     */
+    public void start() {
+        setTitle("Tetris");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        myEastPanel = new JPanel(new BorderLayout());
+        final NextPiece nextPanel = new NextPiece();
+
+        myBoardGUI = new BoardGUI(this);
+        final Board mainBoard = myBoardGUI.getBoard();
+        mainBoard.addObserver(nextPanel);
+        mainBoard.addObserver(myBoardGUI);
+
+        myBoardGUI.setFocusTraversalKeysEnabled(true);
+        myBoardGUI.requestFocus();
+        myBoardGUI.addKeyListener(new KeyPress());
+
+        setJMenuBar(createMenuBar());
+        add(myBoardGUI, BorderLayout.CENTER);
+        myEastPanel.add(nextPanel, BorderLayout.NORTH);
+        myEastPanel.add(myBoardGUI.createScorePanel(), BorderLayout.SOUTH);
+        add(myEastPanel, BorderLayout.EAST);
+
+        keyLabel();
+        setResizable(false);
+        pack();
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    /** Label for the game controls. */
+    private void keyLabel() {
+        final JPanel centerPanel = new JPanel();
+
+        final Border blackline = BorderFactory.createLineBorder(Color.black);
+        centerPanel.setBorder(blackline);
+        final StringBuilder controls = new StringBuilder(200);
+
+        controls.append("<html><u>Controls</u> "
+                        + "<br>Rotate: up <br> Left: left<br> Right: right "
+                        + "<br>Drop: down</html");
+
+        final JLabel keyLabel = new JLabel(controls.toString(), JLabel.CENTER);
+        //Font font = new Font("Helvetica", Font.PLAIN, 16);
+        //keyLabel.setFont(font);
+        centerPanel.add(keyLabel);
+
+        myEastPanel.add(centerPanel);
+
+
+    }
+    /** Creates the menu bar. 
+     * 
+     * @return a menuBar
+     */
+    private JMenuBar createMenuBar() {
+        final JMenuBar menuBar = new JMenuBar();
+
+        final JMenu file = new JMenu("File");
+        final JMenu options = new JMenu("Settings");
+        final JMenuItem exit = new JMenuItem("Exit");
+        final JFrame frame = this;
+
+        /*   newGame.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+              //  myMainBoard.newGame();  
+            }
+
+        });*/
+        exit.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent arg0) {
+                frame.dispose();
+
+            }
+
+        });
+
+
+        menuBar.add(file);
+        menuBar.add(options);
+        file.addSeparator();
+        file.add(exit);
+        menuBar.setVisible(true);
+
+        return menuBar;
+
+
+    }
+
+    /**
+     * Private class for KeyListeners. If key
+     * is pressed certain action occurs.
+     * @author Shema Rezanejad
+     * @version 1
+     *
+     */
+    private class KeyPress extends KeyAdapter {
+
+        @Override
+        public void keyPressed(final KeyEvent theEvent) {
+            myBoardGUI.keyPressed(theEvent);
+
+        }
+
+
+    }
+
+
+
+}
+
+
+

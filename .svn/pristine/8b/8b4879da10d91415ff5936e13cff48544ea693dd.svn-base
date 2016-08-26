@@ -1,0 +1,17 @@
+package view;
+
+import java.awt.EventQueue;
+
+public class TetrisMain {
+
+    public static void main(final String[]theArgs) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                MainGUI main = new MainGUI();
+                main.start();
+            }
+        });
+    }
+
+}
